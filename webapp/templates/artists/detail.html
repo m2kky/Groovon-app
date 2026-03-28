@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}{{ artist.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="flex items-center gap-4">
+        <div class="user-avatar" style="width: 56px; height: 56px; font-size: 22px; border-radius: 12px;">
+            {{ artist.name|first|upper }}
+        </div>
+        <div>
+            <h2>{{ artist.name }}</h2>
+            <p>{{ artist.genre|default:"Unknown genre" }} · {{ artist.city|default:"—" }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <!-- Score & Stats -->
+    <div class="stats-grid">
+        <div class="stat-card purple">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-value">{{ artist.profile_score }}</div>
+            <div class="stat-label">Profile Score</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-icon">🔗</div>
+            <div class="stat-value">{{ artist.platform_count }}</div>
+            <div class="stat-label">Platforms</div>
+        </div>
+        <div class="stat-card blue">
+            <div class="stat-icon">📅</div>
+            <div class="stat-value">{{ artist.events.count }}</div>
+            <div class="stat-label">Events</div>
+        </div>
+        <div class="stat-card amber">
+            <div class="stat-icon">🏷️</div>
+            <div class="stat-value">{{ artist.tags|length }}</div>
+            <div class="stat-label">Tags</div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+        <!-- Contact & Links -->
+        <div class="card">
+            <div class="card-header">
+                <h3>📬 Contact & Links</h3>
+            </div>
+            <div class="card-body">
+                <table class="data-table">
+                    {% if artist.email %}
+                    <tr><td style="color: var(--text-muted);">Email</td><td>{{ artist.email }}</td></tr>
+                    {% endif %}
+                    {% if artist.phone %}
+                    <tr><td style="color: var(--text-muted);">Phone</td><td>{{ artist.phone }}</td></tr>
+                    {% endif %}
+                    {% if artist.website_url %}
+                    <tr><td style="color: var(--text-muted);">Website</td><td><a href="{{ artist.website_url }}" target="_blank">{{ artist.website_url|truncatechars:40 }}</a></td></tr>
+                    {% endif %}
+                    {% if artist.spotify_url %}
+                    <tr><td style="color: var(--text-muted);">🎧 Spotify</td><td><a href="{{ artist.spotify_url }}" target="_blank">Open</a></td></tr>
+                    {% endif %}
+                    {% if artist.instagram_url %}
+                    <tr><td style="color: var(--text-muted);">📷 Instagram</td><td><a href="{{ artist.instagram_url }}" target="_blank">Open</a></td></tr>
+                    {% endif %}
+                    {% if artist.soundcloud_url %}
+                    <tr><td style="color: var(--text-muted);">☁️ SoundCloud</td><td><a href="{{ artist.soundcloud_url }}" target="_blank">Open</a></td></tr>
+                    {% endif %}
+                    {% if artist.youtube_url %}
+                    <tr><td style="color: var(--text-muted);">🎬 YouTube</td><td><a href="{{ artist.youtube_url }}" target="_blank">Open</a></td></tr>
+                    {% endif %}
+                    {% if artist.bandcamp_url %}
+                    <tr><td style="color: var(--text-muted);">🎸 Bandcamp</td><td><a href="{{ artist.bandcamp_url }}" target="_blank">Open</a></td></tr>
+                    {% endif %}
+                    {% if artist.facebook_url %}
+                    <tr><td style="color: var(--text-muted);">📘 Facebook</td><td><a href="{{ artist.facebook_url }}" target="_blank">Open</a></td></tr>
+                    {% endif %}
+                    {% if artist.ra_url %}
+                    <tr><td style="color: var(--text-muted);">🎛️ Resident Advisor</td><td><a href="{{ artist.ra_url }}" target="_blank">Open</a></td></tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+
+        <!-- Raw Data -->
+        <div class="card">
+            <div class="card-header">
+                <h3>📦 Raw Data</h3>
+            </div>
+            <div class="card-body">
+                {% if artist.bio %}
+                <div style="margin-bottom: 16px;">
+                    <strong style="font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 4px;">Bio</strong>
+                    <p style="font-size: 14px;">{{ artist.bio|truncatewords:60 }}</p>
+                </div>
+                {% endif %}
+
+                {% if artist.tags %}
+                <div style="margin-bottom: 16px;">
+                    <strong style="font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 8px;">Tags</strong>
+                    <div class="flex gap-2" style="flex-wrap: wrap;">
+                        {% for tag in artist.tags %}
+                        <span class="badge pending">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div>
+                    <strong style="font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 4px;">Source</strong>
+                    <p style="font-size: 13px;">{{ artist.source|default:"Pipeline" }} · {{ artist.created_at|date:"M j, Y" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Events -->
+    {% if artist.events.exists %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h3>📅 Events</h3>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Event</th>
+                    <th>Venue</th>
+                    <th>City</th>
+                    <th>Date</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in artist.events.all %}
+                <tr>
+                    <td><strong>{{ event.name }}</strong></td>
+                    <td>{{ event.venue|default:"—" }}</td>
+                    <td>{{ event.city|default:"—" }}</td>
+                    <td>{{ event.date|date:"M j, Y" }}</td>
+                    <td>
+                        {% if event.url %}
+                        <a href="{{ event.url }}" target="_blank" class="btn btn-sm btn-secondary">Open →</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

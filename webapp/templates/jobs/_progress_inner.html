@@ -1,0 +1,15 @@
+<!-- _progress_inner.html — the content inside the HTMX swap target -->
+<div class="flex items-center justify-between" style="margin-bottom: 16px;">
+    <div>
+        <strong style="font-size: 18px;">{{ job.name }}</strong>
+        <span class="badge {{ job.status }}" style="margin-left: 8px;">{{ job.get_status_display }}</span>
+    </div>
+    <span style="font-size: 13px; color: var(--text-muted);">{{ job.duration }}</span>
+</div>
+<div class="progress-container">
+    <div class="progress-bar" style="width: {{ job.progress }}%"></div>
+</div>
+<div class="progress-text">
+    <span class="progress-phase">{{ job.current_phase|default:"Initializing" }}</span>
+    <span class="progress-pct">{{ job.progress }}%</span>
+</div>

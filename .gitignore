@@ -1,0 +1,46 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.pytest_cache/
+
+# Virtual environments
+.venv/
+webapp/.venv/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# Local databases and media
+*.sqlite3
+webapp/db.sqlite3
+webapp/media/
+webapp/staticfiles/
+
+# Logs / temp artifacts
+logs/
+tmp/
+*.log
+
+# Local large datasets / exports
+*.xlsx
+*.xls
+*.xlsm
+*.csv
+profiles_rich.json
+test_70_80.json
+artist_test_30_41_output.xlsx
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Archived legacy material
+_archive/

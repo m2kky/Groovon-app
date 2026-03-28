@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}{{ job.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="flex items-center justify-between">
+        <div>
+            <h2>{{ job.name }}</h2>
+            <p>{{ job.get_source_type_display }} • Created {{ job.created_at|date:"M j, Y H:i" }}</p>
+        </div>
+        <span class="badge {{ job.status }}">{{ job.get_status_display }}</span>
+    </div>
+</div>
+
+<div class="page-body">
+    <!-- Progress Hero -->
+    <div class="job-hero" {% if job.is_active %}
+         hx-get="{% url 'jobs:progress' pk=job.id %}"
+         hx-trigger="every 2s"
+         hx-swap="innerHTML"
+    {% endif %}>
+        {% include "jobs/_progress_inner.html" %}
+    </div>
+
+    <!-- Pipeline Phases -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Pipeline Phases</h3>
+        </div>
+        <div class="card-body">
+            <div class="job-phases">
+                {% with phases="scraping,normalizing,enriching,scoring,exporting" %}
+                {% for phase in phases|make_list %}
+                {% endfor %}
+                {% endwith %}
+                <div class="phase-step {% if job.current_phase == 'scraping' %}active{% elif job.progress > 20 %}done{% endif %}">
+                    🔍 Scraping
+                </div>
+                <div class="phase-step {% if job.current_phase == 'normalizing' %}active{% elif job.progress > 40 %}done{% endif %}">
+                    🔧 Normalizing
+                </div>
+                <div class="phase-step {% if job.current_phase == 'enriching' %}active{% elif job.progress > 60 %}done{% endif %}">
+                    ✨ Enriching
+                </div>
+                <div class="phase-step {% if job.current_phase == 'scoring' %}active{% elif job.progress > 80 %}done{% endif %}">
+                    📊 Scoring
+                </div>
+                <div class="phase-step {% if job.current_phase == 'exporting' or job.status == 'completed' %}active{% endif %}">
+                    📤 Exporting
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Stats -->
+    <div class="stats-grid">
+        <div class="stat-card green">
+            <div class="stat-icon">🎵</div>
+            <div class="stat-value">{{ job.total_artists }}</div>
+            <div class="stat-label">Artists Found</div>
+        </div>
+        <div class="stat-card blue">
+            <div class="stat-icon">📅</div>
+            <div class="stat-value">{{ job.total_events }}</div>
+            <div class="stat-label">Events Found</div>
+        </div>
+        <div class="stat-card amber">
+            <div class="stat-icon">⏱️</div>
+            <div class="stat-value">{{ job.duration }}</div>
+            <div class="stat-label">Duration</div>
+        </div>
+    </div>
+
+    {% if job.error_message %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>❌ Error Details</h3>
+        </div>
+        <div class="card-body">
+            <pre style="color: var(--danger); font-size: 13px; white-space: pre-wrap;">{{ job.error_message }}</pre>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Discovered Artists -->
+    {% if artists %}
+    <div class="card">
+        <div class="card-header">
+            <h3>🎵 Discovered Artists ({{ artists|length }})</h3>
+        </div>
+        <div class="card-body">
+            <div class="artist-grid">
+                {% for artist in artists %}
+                <a href="{% url 'artists:detail' pk=artist.id %}" class="artist-card" style="text-decoration: none; color: inherit;">
+                    <div class="score-ring" style="border: 2px solid {{ artist.score_color }}; color: {{ artist.score_color }};">
+                        {{ artist.profile_score }}
+                    </div>
+                    <div class="artist-avatar">{{ artist.name|first|upper }}</div>
+                    <div class="artist-name">{{ artist.name }}</div>
+                    <div class="artist-genre">{{ artist.genre|default:"Unknown genre" }} · {{ artist.city|default:"—" }}</div>
+                    <div class="artist-meta">
+                        <span>🔗 {{ artist.platform_count }} platforms</span>
+                        {% if artist.email %}<span>📧 Has email</span>{% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

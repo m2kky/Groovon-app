@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}New Pipeline Job{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>🚀 New Pipeline Job</h2>
+    <p>Configure and launch an artist discovery pipeline</p>
+</div>
+
+<div class="page-body">
+    <div class="card" style="max-width: 720px;">
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label>Job Name</label>
+                    <input type="text" name="name" class="form-control"
+                           placeholder="e.g., Berlin Artists Discovery" required>
+                </div>
+
+                <!-- Source Type Tabs -->
+                <div class="form-group">
+                    <label>Source Type</label>
+                    <div class="tabs" id="sourceTabs">
+                        <button type="button" class="tab active" data-tab="excel" onclick="switchTab('excel')">📄 Excel Upload</button>
+                        <button type="button" class="tab" data-tab="api" onclick="switchTab('api')">🌐 API Scraper</button>
+                        <button type="button" class="tab" data-tab="artist_list" onclick="switchTab('artist_list')">📝 Artist List</button>
+                    </div>
+                    <input type="hidden" name="source_type" id="sourceType" value="excel">
+                </div>
+
+                <!-- Excel Panel -->
+                <div class="tab-panel active" id="panel-excel">
+                    <div class="form-group">
+                        <a href="{% url 'jobs:download_template' 'events' %}" class="template-download-link">
+                            ⬇️ Download Events Template (.xlsx)
+                        </a>
+                        <div class="upload-zone" id="uploadZone">
+                            <div class="icon">📁</div>
+                            <div class="label">Drop your Excel file here</div>
+                            <div class="hint">Supports .xlsx, .xls, .csv — max 50MB</div>
+                            <input type="file" name="file" accept=".xlsx,.xls,.csv">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Panel -->
+                <div class="tab-panel" id="panel-api">
+                    <div class="form-group">
+                        <label>City / Location</label>
+                        <input type="text" name="city" class="form-control" placeholder="e.g., Berlin, London, NYC">
+                    </div>
+                    <div class="form-group">
+                        <label>Scraper ID (optional)</label>
+                        <input type="text" name="scraper_id" class="form-control" placeholder="Custom scraper ID">
+                    </div>
+                </div>
+
+                <!-- Artist List Panel -->
+                <div class="tab-panel" id="panel-artist_list">
+                    <div class="form-group">
+                        <a href="{% url 'jobs:download_template' 'artist_list' %}" class="template-download-link">
+                            ⬇️ Download Artist List Template (.xlsx)
+                        </a>
+                        <label>Artist Names (one per line)</label>
+                        <textarea name="artist_names" class="form-control"
+                                  placeholder="Artist Name 1&#10;Artist Name 2&#10;Artist Name 3..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Config -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label>Batch Size</label>
+                        <select name="batch_size" class="form-control">
+                            <option value="5">5 artists</option>
+                            <option value="10">10 artists</option>
+                            <option value="15" selected>15 artists</option>
+                            <option value="25">25 artists</option>
+                            <option value="50">50 artists</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Limit (optional)</label>
+                        <input type="number" name="limit" class="form-control" placeholder="No limit" min="1">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; justify-content: center;">
+                    🚀 Launch Pipeline
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+    document.getElementById(`panel-${tab}`).classList.add('active');
+    document.getElementById('sourceType').value = tab;
+}
+
+// Drag and drop
+const zone = document.getElementById('uploadZone');
+if (zone) {
+    ['dragenter', 'dragover'].forEach(e =>
+        zone.addEventListener(e, () => zone.classList.add('dragover'))
+    );
+    ['dragleave', 'drop'].forEach(e =>
+        zone.addEventListener(e, () => zone.classList.remove('dragover'))
+    );
+}
+</script>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Groovon{% endblock %} — Artist Intelligence</title>
+    <meta name="description" content="Groovon — AI-powered artist discovery and enrichment pipeline">
+    <link rel="stylesheet" href="{% static 'css/groovon.css' %}">
+    <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    {% block body %}
+    <div class="app-layout">
+        <!-- ── Sidebar ──────────────────────────────────────── -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <h1>Groovon</h1>
+                <span>Artist Intelligence</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-label">Main</div>
+                    <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                        <span class="icon">📊</span> Dashboard
+                    </a>
+                    <a href="{% url 'jobs:create' %}" class="nav-item {% if request.resolver_match.url_name == 'create' %}active{% endif %}">
+                        <span class="icon">🚀</span> New Job
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-label">Data</div>
+                    <a href="{% url 'jobs:list' %}" class="nav-item {% if request.resolver_match.url_name == 'list' and request.resolver_match.app_name == 'jobs' %}active{% endif %}">
+                        <span class="icon">⚡</span> Pipeline Jobs
+                    </a>
+                    <a href="{% url 'artists:list' %}" class="nav-item {% if request.resolver_match.app_name == 'artists' %}active{% endif %}">
+                        <span class="icon">🎵</span> Artists
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-label">System</div>
+                    <a href="/admin/" class="nav-item">
+                        <span class="icon">⚙️</span> Admin Panel
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                {% if user.is_authenticated %}
+                <div class="user-info">
+                    <div class="user-avatar">{{ user.username|first|upper }}</div>
+                    <div>
+                        <div class="user-name">{{ user.username }}</div>
+                        <div class="user-email">
+                            <a href="{% url 'accounts:logout' %}" style="color: var(--text-muted); font-size: 11px;">Sign out →</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </aside>
+
+        <!-- ── Main ─────────────────────────────────────────── -->
+        <main class="main-content">
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="message {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    {% endblock %}
+
+    <script src="{% static 'js/groovon.js' %}" defer></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

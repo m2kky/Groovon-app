@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="flex items-center justify-between">
+        <div>
+            <h2>Dashboard</h2>
+            <p>Overview of your artist discovery pipeline</p>
+        </div>
+        <a href="{% url 'jobs:create' %}" class="btn btn-primary">
+            🚀 New Pipeline Job
+        </a>
+    </div>
+</div>
+
+<div class="page-body">
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card purple">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-value">{{ total_jobs }}</div>
+            <div class="stat-label">Total Jobs</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value">{{ completed_jobs }}</div>
+            <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card blue">
+            <div class="stat-icon">🎵</div>
+            <div class="stat-value">{{ total_artists }}</div>
+            <div class="stat-label">Artists Found</div>
+        </div>
+        <div class="stat-card red">
+            <div class="stat-icon">❌</div>
+            <div class="stat-value">{{ failed_jobs }}</div>
+            <div class="stat-label">Failed</div>
+        </div>
+    </div>
+
+    <!-- Active Jobs (HTMX live) -->
+    {% if active_jobs %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>🔄 Active Jobs</h3>
+        </div>
+        <div class="card-body">
+            {% for job in active_jobs %}
+            <div class="job-hero" style="margin-bottom: 16px;"
+                 hx-get="{% url 'jobs:progress' pk=job.id %}"
+                 hx-trigger="every 3s"
+                 hx-swap="innerHTML">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <strong>{{ job.name }}</strong>
+                        <span class="badge {{ job.status }}">{{ job.get_status_display }}</span>
+                    </div>
+                    <a href="{% url 'jobs:detail' pk=job.id %}" class="btn btn-sm btn-secondary">View →</a>
+                </div>
+                <div style="margin-top: 16px;">
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: {{ job.progress }}%"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span class="progress-phase">{{ job.current_phase }}</span>
+                        <span class="progress-pct">{{ job.progress }}%</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Jobs -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Recent Jobs</h3>
+            <a href="{% url 'jobs:list' %}" class="btn btn-sm btn-secondary">View All →</a>
+        </div>
+        {% if recent_jobs %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Source</th>
+                    <th>Status</th>
+                    <th>Artists</th>
+                    <th>Duration</th>
+                    <th>Date</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for job in recent_jobs %}
+                <tr>
+                    <td><strong>{{ job.name }}</strong></td>
+                    <td>{{ job.get_source_type_display }}</td>
+                    <td><span class="badge {{ job.status }}">{{ job.get_status_display }}</span></td>
+                    <td>{{ job.total_artists }}</td>
+                    <td>{{ job.duration }}</td>
+                    <td>{{ job.created_at|date:"M j, H:i" }}</td>
+                    <td><a href="{% url 'jobs:detail' pk=job.id %}" class="btn btn-sm btn-secondary">→</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="icon">🎵</div>
+            <h3>No jobs yet</h3>
+            <p>Launch your first pipeline to discover artists</p>
+            <a href="{% url 'jobs:create' %}" class="btn btn-primary">🚀 Create Job</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

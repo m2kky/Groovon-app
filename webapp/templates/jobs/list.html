@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Pipeline Jobs{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="flex items-center justify-between">
+        <div>
+            <h2>Pipeline Jobs</h2>
+            <p>All artist discovery pipeline runs</p>
+        </div>
+        <a href="{% url 'jobs:create' %}" class="btn btn-primary">🚀 New Job</a>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="card">
+        {% if jobs %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Source</th>
+                    <th>Status</th>
+                    <th>Progress</th>
+                    <th>Artists</th>
+                    <th>Duration</th>
+                    <th>Created</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for job in jobs %}
+                <tr>
+                    <td><strong>{{ job.name }}</strong></td>
+                    <td>{{ job.get_source_type_display }}</td>
+                    <td><span class="badge {{ job.status }}">{{ job.get_status_display }}</span></td>
+                    <td>
+                        <div class="progress-container" style="width: 100px; height: 6px;">
+                            <div class="progress-bar" style="width: {{ job.progress }}%"></div>
+                        </div>
+                    </td>
+                    <td>{{ job.total_artists }}</td>
+                    <td>{{ job.duration }}</td>
+                    <td>{{ job.created_at|date:"M j, H:i" }}</td>
+                    <td><a href="{% url 'jobs:detail' pk=job.id %}" class="btn btn-sm btn-secondary">→</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if is_paginated %}
+        <div class="card-body" style="text-align: center;">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-sm btn-secondary">← Prev</a>
+            {% endif %}
+            <span style="margin: 0 16px; color: var(--text-muted);">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="btn btn-sm btn-secondary">Next →</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="empty-state">
+            <div class="icon">⚡</div>
+            <h3>No jobs yet</h3>
+            <p>Create your first pipeline job to discover artists</p>
+            <a href="{% url 'jobs:create' %}" class="btn btn-primary">🚀 Create Job</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

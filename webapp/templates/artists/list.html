@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Artists{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="flex items-center justify-between">
+        <div>
+            <h2>🎵 Artists</h2>
+            <p>{{ total }} artists discovered across all pipeline runs</p>
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    {% if artists %}
+    <div class="artist-grid">
+        {% for artist in artists %}
+        <a href="{% url 'artists:detail' pk=artist.id %}" class="artist-card" style="text-decoration: none; color: inherit;">
+            <div class="score-ring" style="border: 2px solid {{ artist.score_color }}; color: {{ artist.score_color }};">
+                {{ artist.profile_score }}
+            </div>
+            <div class="artist-avatar">{{ artist.name|first|upper }}</div>
+            <div class="artist-name">{{ artist.name }}</div>
+            <div class="artist-genre">{{ artist.genre|default:"Unknown" }} · {{ artist.city|default:"—" }}</div>
+            <div class="artist-meta">
+                <span>🔗 {{ artist.platform_count }} platforms</span>
+                {% if artist.email %}<span>📧</span>{% endif %}
+            </div>
+            <div class="artist-links">
+                {% if artist.spotify_url %}<span>🎧 Spotify</span>{% endif %}
+                {% if artist.instagram_url %}<span>📷 IG</span>{% endif %}
+                {% if artist.soundcloud_url %}<span>☁️ SC</span>{% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+    <div style="text-align: center; margin-top: 32px;">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-sm btn-secondary">← Prev</a>
+        {% endif %}
+        <span style="margin: 0 16px; color: var(--text-muted);">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="btn btn-sm btn-secondary">Next →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+        <div class="icon">🎵</div>
+        <h3>No artists yet</h3>
+        <p>Run a pipeline job to discover and enrich artists</p>
+        <a href="{% url 'jobs:create' %}" class="btn btn-primary">🚀 Create Job</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
