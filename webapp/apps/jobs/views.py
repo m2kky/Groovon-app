@@ -38,6 +38,10 @@ class JobCreateView(LoginRequiredMixin, View):
         name = request.POST.get("name", "").strip()
         config = {}
 
+        if source_type == "excel" and not request.FILES.get("file"):
+            messages.error(request, "Please upload an Excel file.")
+            return redirect("jobs:create")
+
         if source_type == "api":
             config["city"] = request.POST.get("city", "")
             config["scraper_id"] = request.POST.get("scraper_id", "")
@@ -70,8 +74,16 @@ class JobCreateView(LoginRequiredMixin, View):
 
         # Handle file upload
         if source_type == "excel" and request.FILES.get("file"):
-            job.input_file = request.FILES["file"]
-            job.save(update_fields=["input_file"])
+            try:
+                job.input_file = request.FILES["file"]
+                job.save(update_fields=["input_file"])
+            except Exception as exc:
+                job.status = Job.Status.FAILED
+                job.error_message = f"Failed to store uploaded file: {exc}"
+                job.save(update_fields=["status", "error_message"])
+                logger.exception("Failed to store upload for job %s", job.id)
+                messages.error(request, "Upload failed. Check media storage configuration.")
+                return redirect("jobs:detail", pk=job.id)
 
         # Launch Celery task
         from .tasks import run_pipeline_task

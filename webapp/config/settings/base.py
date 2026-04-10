@@ -109,6 +109,7 @@ STORAGES = {
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+os.makedirs(MEDIA_ROOT, exist_ok=True)
 
 # ── Celery ─────────────────────────────────────────────────────────
 CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="redis://127.0.0.1:6379/0")
