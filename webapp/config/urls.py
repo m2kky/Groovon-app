@@ -11,5 +11,5 @@ urlpatterns = [
     path("", include("apps.jobs.urls_dashboard")),
 ]
 
-if settings.DEBUG:
+if settings.DEBUG or getattr(settings, "SERVE_MEDIA", False):
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,3 +1,6 @@
+import logging
+
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
@@ -7,6 +10,8 @@ from django.views.generic import CreateView, DetailView, ListView, TemplateView
 
 from .models import Job
 from apps.artists.models import Artist
+
+logger = logging.getLogger(__name__)
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -70,7 +75,15 @@ class JobCreateView(LoginRequiredMixin, View):
 
         # Launch Celery task
         from .tasks import run_pipeline_task
-        run_pipeline_task.delay(str(job.id))
+        try:
+            run_pipeline_task.delay(str(job.id))
+        except Exception as exc:
+            job.status = Job.Status.FAILED
+            job.error_message = f"Failed to enqueue job: {exc}"
+            job.save(update_fields=["status", "error_message"])
+            logger.exception("Failed to enqueue job %s", job.id)
+            messages.error(request, "Failed to start job. Check worker/Redis configuration.")
+            return redirect("jobs:detail", pk=job.id)
 
         return redirect("jobs:detail", pk=job.id)
 

@@ -24,6 +24,7 @@ if env_file.exists():
 SECRET_KEY = env("DJANGO_SECRET_KEY", default="dev-secret-change-in-production!")
 DEBUG = env.bool("DJANGO_DEBUG", default=True)
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["*"])
+SERVE_MEDIA = env.bool("DJANGO_SERVE_MEDIA", default=False)
 
 # ── Apps ───────────────────────────────────────────────────────────
 DJANGO_APPS = [
