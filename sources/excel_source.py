@@ -42,7 +42,12 @@ class ExcelSource(EventSource):
     # ── interface ───────────────────────────────────────────────────
     def validate(self) -> bool:
         if not self._path or not os.path.isfile(self._path):
-            log.error(f"ExcelSource: file not found → {self._path}")
+            log.error(
+                "ExcelSource: file not found → %s (cwd=%s, dir_exists=%s)",
+                self._path,
+                os.getcwd(),
+                os.path.isdir(os.path.dirname(self._path)) if self._path else False,
+            )
             return False
         return True
 

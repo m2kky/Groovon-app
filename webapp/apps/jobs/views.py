@@ -1,5 +1,7 @@
 import logging
+import os
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
@@ -77,6 +79,15 @@ class JobCreateView(LoginRequiredMixin, View):
             try:
                 job.input_file = request.FILES["file"]
                 job.save(update_fields=["input_file"])
+                stored_path = getattr(job.input_file, "path", "")
+                exists = os.path.exists(stored_path) if stored_path else False
+                logger.info(
+                    "Stored upload for job %s at %s (exists=%s, media_root=%s)",
+                    job.id,
+                    stored_path,
+                    exists,
+                    getattr(settings, "MEDIA_ROOT", ""),
+                )
             except Exception as exc:
                 job.status = Job.Status.FAILED
                 job.error_message = f"Failed to store uploaded file: {exc}"
