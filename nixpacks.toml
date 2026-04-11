@@ -1,0 +1,4 @@
+providers = ["python"]
+
+# This file enables Nixpacks detection when the build context is repo root.
+# Install/start commands are configured per-service in Coolify.
