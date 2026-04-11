@@ -16,6 +16,7 @@ In Coolify, set these variables for both **web** and **worker** services:
 - `DJANGO_CSRF_TRUSTED_ORIGINS=https://your-domain.com,https://www.your-domain.com`
 - `DJANGO_DEBUG=False`
 - `DJANGO_SERVE_MEDIA=True`
+- `DJANGO_MEDIA_ROOT=/app/media`
 - `DATABASE_URL=postgres://user:pass@postgres:5432/groovon`
 - `CELERY_BROKER_URL=redis://redis:6379/0`
 - `CELERY_RESULT_BACKEND=redis://redis:6379/0`
@@ -86,7 +87,7 @@ If you want admin-only onboarding, disable/remove registration route in:
 ## 5) Common Production Notes
 
 - Keep `DJANGO_DEBUG=False`.
-- Add a persistent volume for media uploads at `/app/webapp/media`.
+- Add a persistent volume for media uploads at `/app/media` on BOTH web and worker services.
 - Use Postgres in production and set `DATABASE_URL` for both web and worker services.
 - Never use `GROOVON_INSECURE_SSL=True` in production.
 - Use HTTPS domain and ensure DNS points to Coolify.

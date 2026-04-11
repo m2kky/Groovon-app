@@ -110,7 +110,7 @@ STORAGES = {
 }
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = Path(env("DJANGO_MEDIA_ROOT", default=str(BASE_DIR / "media")))
 os.makedirs(MEDIA_ROOT, exist_ok=True)
 
 # ── Celery ─────────────────────────────────────────────────────────
