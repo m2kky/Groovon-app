@@ -65,13 +65,40 @@ def run_pipeline_task(self, job_id: str):
         from sources.api_source import APISource
         from sources.artist_list_source import ArtistListSource
         from sinks.json_sink import JsonSink
+        import os
 
         config = job.config or {}
         sinks = []
 
+        def _resolve_upload_path(job_obj) -> str:
+            if not job_obj.input_file:
+                return ""
+            stored_path = job_obj.input_file.path
+            if stored_path and os.path.exists(stored_path):
+                return stored_path
+            rel_name = job_obj.input_file.name  # uploads/file.xlsx
+            candidates = []
+            env_root = os.getenv("DJANGO_MEDIA_ROOT")
+            if env_root:
+                candidates.append(os.path.join(env_root, rel_name))
+            candidates.append(os.path.join("/app/media", rel_name))
+            candidates.append(os.path.join("/app/webapp/media", rel_name))
+            for cand in candidates:
+                if os.path.exists(cand):
+                    log.info("Resolved upload path for job %s → %s", job_obj.id, cand)
+                    return cand
+            log.error(
+                "Upload not found for job %s. stored_path=%s candidates=%s",
+                job_obj.id,
+                stored_path,
+                candidates,
+            )
+            return stored_path
+
         # Build source based on type
         if job.source_type == "excel" and job.input_file:
-            source = ExcelSource(config={"path": job.input_file.path})
+            excel_path = _resolve_upload_path(job)
+            source = ExcelSource(config={"path": excel_path})
         elif job.source_type == "api":
             source = APISource(config=config)
         elif job.source_type == "artist_list":
@@ -80,7 +107,7 @@ def run_pipeline_task(self, job_id: str):
             raise ValueError(f"Unsupported source type: {job.source_type}")
 
         # Always output JSON
-        import tempfile, os
+        import tempfile
         json_out = os.path.join(tempfile.gettempdir(), f"groovon_{job_id}.json")
         sinks.append(JsonSink(config={"output_path": json_out}))
 
