@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*.pyo
+.venv
+webapp/.venv
+
+# Local data / large files
+*.xlsx
+*.xls
+*.xlsm
+*.csv
+*.sqlite3
+profiles_rich.json
+test_70_80.json
+test_100_109.json
+
+# Logs / temp
+logs/
+tmp/
+*.log
+
+# Archives
+_archive/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Docker / CI
+docker-compose*.yml
+.dockerignore
+Dockerfile

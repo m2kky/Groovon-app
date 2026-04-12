@@ -1,0 +1,69 @@
+# ── Groovon Local Production Stack ─────────────────────────────
+# Usage: docker-compose up --build
+# This mirrors what Coolify will run in production.
+# ───────────────────────────────────────────────────────────────
+
+services:
+  # ── PostgreSQL ──────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: groovon
+      POSTGRES_USER: groovon
+      POSTGRES_PASSWORD: groovon-dev-pw
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U groovon"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── Redis ───────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── Django Web ──────────────────────────────────────────────
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file: .env.production.local
+    environment:
+      DATABASE_URL: postgres://groovon:groovon-dev-pw@postgres:5432/groovon
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    volumes:
+      - media:/app/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ── Celery Worker ───────────────────────────────────────────
+  worker:
+    build: .
+    command: >
+      sh -c "cd /app/webapp && celery -A config.celery_app worker -l info --concurrency=2"
+    env_file: .env.production.local
+    environment:
+      DATABASE_URL: postgres://groovon:groovon-dev-pw@postgres:5432/groovon
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    volumes:
+      - media:/app/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  media:
